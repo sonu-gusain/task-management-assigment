@@ -2,218 +2,149 @@
 
 ##  Demo Video
 
-Watch the project demo here:  https://drive.google.com/file/d/1dMIXP2OqMjSXlCBpNyA_4Xvqe_PSMAA6/view?usp=drive_link
+Watch the project demo here: https://drive.google.com/file/d/192UWlUGyfFYAvti9Sgg4Qb8F4LGpovxL/view?usp=drive_link
 
 
-#  Task Management API
 
-##  Overview
+# Task Management API (Assignment 3)
 
-This is a backend API for a **Task Management Application** built using **Node.js and Express.js**.
+## Overview
 
-It allows users to:
+This project is a Task Management API built using Node.js and Express.js. It provides functionality for user authentication, task management, categorization, tagging, reminder scheduling, and webhook integration.
 
-* Register and Login securely
-* Manage tasks (Create, Read, Update, Delete)
-* Access only their own tasks
+The system allows users to create, update, and manage tasks efficiently, along with simulated real-time notifications and external service communication.
 
 ---
+## Project Structure
 
-##  Tech Stack
-
-* Node.js
-* Express.js
-* PostgreSQL (for Users)
-* MongoDB (for Tasks)
-* JWT Authentication
-* bcryptjs
-* dotenv
-
----
-
-##  Folder Structure
-
-```
-task-api/
+Maveen_assignment3/
 │
 ├── config/
-│   └── db.js
-│
-├── models/
-│   └── mongoschema.js
-│
-├── routes/
-│   ├── auth.js
-│   └── tasks.js
+│   ├── mongo.js
+│   └── postgres.js
 │
 ├── middleware/
 │   └── authMiddleware.js
 │
+├── models/
+│   ├── Task.js
+│   ├── Category.js
+│   └── Tag.js
+│
+├── routes/
+│   ├── auth.js
+│   ├── tasks.js
+│   ├── categories.js
+│   └── tags.js
+│
+├── services/
+│   ├── reminderService.js
+│   └── webhookService.js
+│
 ├── .env
-├── server.js
 ├── package.json
+├── package-lock.json
+├── server.js
 └── README.md
-```
+
+
+## Tech Stack
+
+- Node.js
+- Express.js
+- MongoDB (for tasks, categories, tags)
+- PostgreSQL (for user authentication)
+- JSON Web Token (JWT)
+- bcrypt.js
+- dotenv
+- axios
+- In-memory scheduling using setTimeout
 
 ---
 
-##  Setup Instructions
+## Features
 
-### 1. Clone the repository
+### Authentication
 
-```
-git clone 
-cd task-api
-```
-
----
-
-### 2. Install dependencies
-
-```
-npm install
-```
+- User registration
+- User login
+- JWT-based authentication
+- Protected routes
 
 ---
 
-### 3. Create `.env` file
+### Task Management
 
-```
-PORT=5000
-
-PG_HOST=localhost
-PG_PORT=5432
-PG_USER=postgres
-PG_PASSWORD=your_password
-PG_DATABASE=task_management
-
-MONGO_URI=mongodb://127.0.0.1:27017/task_management
-
-JWT_SECRET=your_secret_key
-```
+- Create task
+- Get all tasks
+- Get single task
+- Update task
+- Delete task
 
 ---
 
-### 4. Setup PostgreSQL Database
+### Categories
 
-Run this SQL query:
-
-```
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+- Create category
+- Get all categories
+- Get single category
+- Update category
+- Delete category
 
 ---
 
-### 5. Run the server
+### Tags
 
-```
-npm run dev
-```
-
----
-
-##  Authentication
-
-* JWT is used for authentication
-* After login, a token is generated
-* Use token in headers:
-
-```
-Authorization: Bearer <your_token>
-```
+- Multiple tags can be assigned to a task
+- Tags are implemented as free-form text (array of strings)
 
 ---
 
-##  API Endpoints
+### Filtering
 
-###  Auth APIs
+- Filter tasks by category
+- Filter tasks by tags
+- Filter tasks by status
+- Combined filtering supported
 
-#### Register
+Example:
 
-```
-POST /api/auth/register
-```
-
-#### Login
-
-```
-POST /api/auth/login
-
-
-
-
-
-#### Profile
-
-```
-GET /api/auth/profile
-```
+GET /api/tasks?categoryId=category_id&tags=Urgent&status=pending
 
 ---
 
-###  Task APIs
+## Reminder System
 
-#### Create Task
+- When a task is created or updated with a dueDate, a reminder is scheduled
+- The reminder triggers 1 hour before the due date
+- Implemented using in-memory scheduling with setTimeout
+- Reminder is logged to the console
 
-```
-POST /api/tasks
-```
+### Behavior
 
-#### Get All Tasks
+- On dueDate update → reminder is rescheduled
+- On task completion → reminder is cancelled
+- On task deletion → reminder is cancelled
 
-```
-GET /api/tasks
-```
+### Note
 
-#### Get Single Task
-
-```
-GET /api/tasks/:id
-```
-
-#### Update Task
-
-```
-PATCH /api/tasks/:id
-```
-
-###  Delete Task
-
-```
-DELETE /api/tasks/:id
-```
+This is an in-memory solution. Reminders are not persistent and will be lost if the server restarts. In production, tools like BullMQ with Redis can be used.
 
 ---
 
-##  Security Features
+## Webhook Integration
 
-* Password hashing using bcrypt
-* JWT-based authentication
-* Protected routes
-* User-specific task access (no cross-user access)
+- When task status changes to "completed", a POST request is sent to an external webhook
+- Webhook URL is configurable using environment variables
 
----
+### Payload Example
 
-##  Validation
-
-* Email format validation
-* Password length validation
-* Task status validation (pending/completed)
-* Due date validation
-
-
----
-
-##  Design Decisions
-
-* PostgreSQL used for structured user data
-* MongoDB used for flexible task storage
-* JWT used for stateless authentication
-* Clean and modular folder structure
+```json
+{
+  "taskId": "task_id",
+  "title": "Task Title",
+  "userId": "user_id",
+  "completedAt": "timestamp"
+}
 
 
